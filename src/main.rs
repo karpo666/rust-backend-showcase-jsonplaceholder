@@ -4,8 +4,8 @@ use crate::configuration::Configuration;
 
 mod configuration;
 mod user;
-mod user_service;
-mod user_controller;
+////mod user_service;
+//mod user_controller;
 mod user_client;
 
 lazy_static! {
