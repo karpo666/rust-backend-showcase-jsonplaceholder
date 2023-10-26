@@ -1,0 +1,4 @@
+/target
+/.idea
+resources/config.toml
+Cargo.lock
