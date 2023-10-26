@@ -1,0 +1,11 @@
+## TEST CONFIGURAION
+
+[json_placeholder]
+url = "TEST_URL"
+
+[database]
+url = "TEST_URL"
+database_name = "showcase"
+
+user = "TEST_USER"
+password = "TEST_PASSWORD"
