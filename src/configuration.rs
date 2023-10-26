@@ -9,9 +9,7 @@ pub struct JsonPlaceholder {
 #[derive(Debug, Deserialize)]
 pub struct Database {
     pub url: String,
-    pub user: String,
     pub database_name: String,
-    pub password: String
 }
 
 #[derive(Debug, Deserialize)]
