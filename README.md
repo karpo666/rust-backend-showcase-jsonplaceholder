@@ -1,5 +1,7 @@
 # Backend showcase with JsonPlaceholder
 
+[![Tests](https://github.com/karpo666/rust-backend-showcase-jsonplaceholder/actions/workflows/tests.yml/badge.svg)](https://github.com/karpo666/rust-backend-showcase-jsonplaceholder/actions/workflows/tests.yml)
+
 This is a backend project built with Rust, Reqwest, Tokio and Actix-web and meant as a showcase.
 
 The goal is to provide a secure REST api for reading and updating User info in [JsonPlaceholder](https://jsonplaceholder.typicode.com).
