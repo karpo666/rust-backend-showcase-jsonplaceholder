@@ -4,8 +4,5 @@
 url = "TEST_URL"
 
 [database]
-url = "TEST_URL"
+url = "mongodb://test_root:test_pass@localhost:27017"
 database_name = "showcase"
-
-user = "TEST_USER"
-password = "TEST_PASSWORD"

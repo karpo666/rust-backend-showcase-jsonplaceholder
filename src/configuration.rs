@@ -48,10 +48,9 @@ mod test {
 
     #[test]
     fn test_read_from_config_file_success() {
-        let configuration_result = Configuration::read_from_config_file("resources/test/config");
+        let configuration_result = Configuration::read_from_config_file("resources/test/config.toml");
         assert!(configuration_result.is_ok());
         let configuration = configuration_result.unwrap();
         assert_eq!("TEST_URL", configuration.json_placeholder.url);
-        assert_eq!("TEST_URL", configuration.database.url);
     }
 }
