@@ -10,7 +10,8 @@ pub enum UserClientError {
     UserNotFound(String),
     RestError(StatusCode),
     UrlParseError,
-    SerdeError
+    SerdeError,
+    NoIdError
 }
 
 const PATH: &str = "/users";
@@ -184,8 +185,11 @@ async fn post_new_user_with_url(user: User, url: &str) -> Result<User, UserClien
 /// ## Argumets.
 /// * `user` - Updated user info.
 pub async fn update_existing_user(user: User) -> Result<User, UserClientError> {
-    println!("Updating existing user with id: {}.", &user.user_id);
-    update_exisitng_user_with_url(user, &CONFIG.json_placeholder.url).await
+    if let None = &user.user_id {
+        return Err(UserClientError::NoIdError);
+    };
+    println!("Updating existing user with id: {}.", &user.user_id.unwrap());
+    update_existing_user_with_url(user, &CONFIG.json_placeholder.url).await
 }
 
 /// Update an existing user info.
@@ -193,7 +197,7 @@ pub async fn update_existing_user(user: User) -> Result<User, UserClientError> {
 /// ## Argumets.
 /// * `user` - Updated user info.
 /// * `url` - Url where users should be fetched. "/users" will be added to the end of base url.
-async fn update_exisitng_user_with_url(user: User, url: &str) -> Result<User, UserClientError> {
+async fn update_existing_user_with_url(user: User, url: &str) -> Result<User, UserClientError> {
 
     // Parse url and handle possible errors.
     let url_result = Url::parse(url).and_then(
@@ -223,7 +227,7 @@ async fn update_exisitng_user_with_url(user: User, url: &str) -> Result<User, Us
 
     match response.status() {
         StatusCode::OK => (),
-        StatusCode::NOT_FOUND => return Err(UserClientError::UserNotFound(user.user_id.to_string())),
+        StatusCode::NOT_FOUND => return Err(UserClientError::UserNotFound(user.user_id.unwrap().to_string())),
         _ => return Err(UserClientError::RestError(response.status()))
     }
 
@@ -306,10 +310,11 @@ mod test {
 
         let response: Vec<User> = response_result.unwrap();
         assert_eq!(10, response.len());
-        assert_eq!(1, response.get(0).unwrap().user_id);
+        assert!(response.get(0).unwrap().user_id.is_some());
+        assert_eq!(1, response.get(0).unwrap().user_id.unwrap());
 
         for (i, user) in response.iter().enumerate() {
-            assert_eq!(i as i32 + 1, user.user_id);
+            assert_eq!(i as i32 + 1, user.user_id.unwrap());
         }
 
         get_users_mock.assert();
@@ -400,7 +405,8 @@ mod test {
         assert!(response_result.is_ok());
 
         let response: User = response_result.unwrap();
-        assert_eq!(1, response.user_id);
+        assert!(response.user_id.is_some());
+        assert_eq!(1, response.user_id.unwrap());
         assert_eq!("Leanne Graham", response.name);
 
         get_user_mock.assert()
@@ -475,7 +481,8 @@ mod test {
         assert!(response_result.is_ok());
 
         let response = response_result.unwrap();
-        assert_eq!(100, response.user_id);
+        assert!(response.user_id.is_some());
+        assert_eq!(100, response.user_id.unwrap());
         assert_eq!(new_user_info.name, response.name);
         assert_eq!(new_user_info.email, response.email);
         assert_eq!(new_user_info.company.bs, response.company.bs);
@@ -487,7 +494,7 @@ mod test {
     async fn test_update_existing_user_faulty_url() {
         assert_eq!(
             Err(UserClientError::UrlParseError),
-            update_exisitng_user_with_url(User::create_test_user(0), "THIS IS NOT A PROPER URL.").await
+            update_existing_user_with_url(User::create_test_user(0), "THIS IS NOT A PROPER URL.").await
         );
     }
 
@@ -505,7 +512,7 @@ mod test {
 
         assert_eq!(
             Err(UserClientError::RestError(StatusCode::BAD_REQUEST)),
-            update_exisitng_user_with_url(User::create_test_user(0), mock_server.url("").as_str()).await
+            update_existing_user_with_url(User::create_test_user(0), mock_server.url("").as_str()).await
         );
 
         update_user_mock.assert();
@@ -525,7 +532,7 @@ mod test {
 
         assert_eq!(
             Err(UserClientError::UserNotFound(0.to_string())),
-            update_exisitng_user_with_url(User::create_test_user(0), mock_server.url("").as_str()).await
+            update_existing_user_with_url(User::create_test_user(0), mock_server.url("").as_str()).await
         );
 
         update_user_mock.assert();
@@ -546,7 +553,7 @@ mod test {
 
         assert_eq!(
             Err(UserClientError::SerdeError),
-            update_exisitng_user_with_url(User::create_test_user(0), mock_server.url("").as_str()).await
+            update_existing_user_with_url(User::create_test_user(0), mock_server.url("").as_str()).await
         );
 
         update_user_mock.assert();
@@ -568,11 +575,12 @@ mod test {
                 .json_body(json!(User::create_test_user(666)));
         });
 
-        let response_result = update_exisitng_user_with_url(user_info_to_be_updated.clone(), mock_server.url("").as_str()).await;
+        let response_result = update_existing_user_with_url(user_info_to_be_updated.clone(), mock_server.url("").as_str()).await;
         assert!(response_result.is_ok());
 
         let response = response_result.unwrap();
-        assert_eq!(666, response.user_id);
+        assert!(response.user_id.is_some());
+        assert_eq!(666, response.user_id.unwrap());
         assert_eq!(user_info_to_be_updated.name, response.name);
 
         update_user_mock.assert();
