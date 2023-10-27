@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 pub struct User {
 
     #[serde(rename = "id")]
-    pub user_id: i32,
+    pub user_id: Option<i32>,
     pub name: String,
     pub username: String,
     pub email: String,
@@ -36,7 +36,7 @@ impl User {
     /// Create a new user. Meant for testing.
     pub fn create_test_user(id: i32) -> User {
         User {
-            user_id: id,
+            user_id: Some(id),
             name: "TESTER".to_string(),
             username: "TESTER_69".to_string(),
             email: "testlover@testing.gov".to_string(),
