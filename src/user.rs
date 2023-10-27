@@ -1,5 +1,7 @@
 use std::collections::HashMap;
+use std::process::id;
 use serde::{Deserialize, Serialize};
+use url::quirks::username;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Eq, Clone)]
 pub struct User {
@@ -34,9 +36,9 @@ pub struct Company {
 impl User {
 
     /// Create a new user. Meant for testing.
-    pub fn create_test_user(id: i32) -> User {
+    pub fn create_test_user(id: Option<i32>) -> User {
         User {
-            user_id: Some(id),
+            user_id: id,
             name: "TESTER".to_string(),
             username: "TESTER_69".to_string(),
             email: "testlover@testing.gov".to_string(),
