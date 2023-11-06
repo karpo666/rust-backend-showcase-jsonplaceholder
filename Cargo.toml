@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 actix-web = "4.4.0"
+bson = "2.7.0"
 config = "0.13.3"
 lazy_static = "1.4.0"
 mongodb = "2.7.0"
