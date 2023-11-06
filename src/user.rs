@@ -1,13 +1,12 @@
 use std::collections::HashMap;
-use std::process::id;
-use serde::{Deserialize, Serialize};
-use url::quirks::username;
+use serde::{de, Deserialize, Serialize};
+use serde_json::Value;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Eq, Clone)]
 pub struct User {
 
-    #[serde(rename = "id")]
-    pub user_id: Option<i32>,
+    #[serde(deserialize_with = "deserialize_id")]
+    pub id: Option<String>,
     pub name: String,
     pub username: String,
     pub email: String,
@@ -36,9 +35,9 @@ pub struct Company {
 impl User {
 
     /// Create a new user. Meant for testing.
-    pub fn create_test_user(id: Option<i32>) -> User {
+    pub fn create_test_user(id: Option<String>) -> User {
         User {
-            user_id: id,
+            id: id,
             name: "TESTER".to_string(),
             username: "TESTER_69".to_string(),
             email: "testlover@testing.gov".to_string(),
@@ -59,5 +58,19 @@ impl User {
                 bs: "To test".to_string(),
             },
         }
+    }
+}
+
+/// Custom deserializer for User.id.
+fn deserialize_id<'de, D>(de: D) -> Result<Option<String>, D::Error>
+where
+    D: serde::Deserializer<'de>
+{
+
+    match Value::deserialize(de)? {
+        Value::Number(num) => Ok(Some(num.to_string())),
+        Value::String(string) => Ok(Some(string)),
+        Value::Null => Ok(None),
+        _ => Err(de::Error::custom("Invalid type"))
     }
 }
