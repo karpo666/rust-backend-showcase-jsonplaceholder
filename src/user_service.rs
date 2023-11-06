@@ -1,6 +1,8 @@
+use bson::bson;
 use mongodb::{Client, Collection};
-use mongodb::bson::doc;
+use mongodb::bson::{doc, Document};
 use mongodb::options::ClientOptions;
+use serde_json::Value;
 use crate::user::User;
 
 #[derive(Eq, PartialEq, Debug)]
@@ -99,7 +101,56 @@ async fn add_user_to_db(user: &mut User, connection_string: &str, database_name:
         Ok(_) => Ok(new_id),
         Err(_) => Err(DatabaseError::OperationFailed)
     }
+}
 
+async fn update_user_in_db(user: User, connection_string: &str, database_name: &str) -> Result<(), DatabaseError> {
+    // Get collection.
+    let collection = get_user_collection(connection_string, database_name).await?;
+    let existing_user =
+        get_user_from_db(
+            user.id.clone().unwrap().as_str(),
+            connection_string,
+            database_name
+        ).await?
+    ;
+
+    let update_result = collection.update_one(
+        doc! {
+            "id": user.id.clone().unwrap()
+        },
+        generate_update_document(existing_user, user),
+        None
+    ).await;
+
+    match update_result {
+        Ok(_) => Ok(()),
+        Err(e) => {
+            println!("{:?}", e);
+            Err(DatabaseError::OperationFailed)
+        }
+    }
+}
+
+
+fn generate_update_document(original_user: User, updated_user: User) -> Document {
+    let mut update_document = doc! {};
+
+    // Serialize the original and update structs to JSON value.
+    let original_json = serde_json::to_value(original_user).unwrap();
+    let updated_json = serde_json::to_value(updated_user).unwrap();
+
+    // Iterate over the fields and compare.
+    for (field, updated_value) in updated_json.as_object().unwrap() {
+        if let Some(original_value) = original_json.get(&field) {
+            // Skip if values match.
+            if &original_value == &updated_value {
+                continue
+            }
+        }
+        update_document.insert("$set", doc! { field: bson::to_bson(updated_value).unwrap() });
+    }
+
+    update_document
 }
 
 /// Delete user with given id from database.
@@ -291,6 +342,50 @@ mod test {
         );
 
         container.stop();
+    }
+
+    #[tokio::test]
+    async fn test_add_and_update() {
+        let client = Cli::default();
+        let container = client.run(get_mongo_image());
+
+        let port = container.get_host_port_ipv4(27017);
+        let connection_string = format!("{}{}", C_STRING, port);
+
+        let insert_result =
+            add_user_to_db(
+                &mut User::create_test_user(None),
+                &connection_string,
+                DB_NAME
+            ).await
+        ;
+
+        assert!(insert_result.is_ok());
+        let inserted_id = insert_result.unwrap();
+
+        let mut user = User::create_test_user(Some(inserted_id.clone()));
+        user.name = "NEW NAME".to_string();
+
+        let update_result =
+            update_user_in_db(
+                user,
+                &connection_string,
+                DB_NAME
+            ).await
+        ;
+
+        assert!(update_result.is_ok());
+
+        let find_result =
+            get_user_from_db(
+                inserted_id.as_str(),
+                &connection_string,
+                DB_NAME
+            ).await
+        ;
+
+        assert!(find_result.is_ok());
+        assert_eq!("NEW NAME".to_string(), find_result.unwrap().name);
     }
 
     fn get_mongo_image() -> GenericImage {
