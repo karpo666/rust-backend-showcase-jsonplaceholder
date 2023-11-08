@@ -18,7 +18,6 @@ const PATH: &str = "/users";
 
 /// Fetch all users.
 pub async fn get_users() -> Result<Vec<User>, UserClientError> {
-    println!("Fetching all users.");
     get_users_with_url(&CONFIG.json_placeholder.url).await
 }
 
@@ -60,7 +59,6 @@ async fn get_users_with_url(url: &str) -> Result<Vec<User>, UserClientError> {
 
 
     let response_text = response.text().await;
-    dbg!(&response_text);
     // Deserialize and return.
     match serde_json::from_str(response_text.unwrap().as_str()) {
         Ok(user) => Ok(user),
@@ -76,7 +74,6 @@ async fn get_users_with_url(url: &str) -> Result<Vec<User>, UserClientError> {
 /// ## Arguments.
 /// * `id` - Id for the user to be fetched.
 pub async fn get_user(id: String) -> Result<User, UserClientError> {
-    println!("Getting user with id: {}", &id);
     get_user_with_url(id, &CONFIG.json_placeholder.url).await
 }
 
@@ -131,7 +128,6 @@ async fn get_user_with_url(id: String, url: &str) -> Result<User, UserClientErro
 /// ## Arguments.
 /// * `user` - New user info.
 async fn post_new_user(user: User) -> Result<User, UserClientError> {
-    println!("Creating new user.");
     post_new_user_with_url(user, &CONFIG.json_placeholder.url).await
 }
 
@@ -191,7 +187,6 @@ pub async fn update_existing_user(user: User) -> Result<User, UserClientError> {
     if let None = &user.id {
         return Err(UserClientError::NoIdError);
     };
-    println!("Updating existing user with id: {}.", user.clone().id.unwrap());
     update_existing_user_with_url(user, &CONFIG.json_placeholder.url).await
 }
 
