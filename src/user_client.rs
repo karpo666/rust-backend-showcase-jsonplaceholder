@@ -11,7 +11,9 @@ pub enum UserClientError {
     RestError(StatusCode),
     UrlParseError,
     SerdeError,
-    NoIdError
+
+    // Not used. Created for `update_user` -operations, which will not be really used.
+    _NoIdError
 }
 
 const PATH: &str = "/users";
@@ -124,19 +126,21 @@ async fn get_user_with_url(id: String, url: &str) -> Result<User, UserClientErro
 }
 
 /// Post a new user.
+/// Not used. JsonPlaceholder does not really support `POST` or `PATCH`.
 ///
 /// ## Arguments.
 /// * `user` - New user info.
-async fn post_new_user(user: User) -> Result<User, UserClientError> {
-    post_new_user_with_url(user, &CONFIG.json_placeholder.url).await
+async fn _post_new_user(user: User) -> Result<User, UserClientError> {
+    _post_new_user_with_url(user, &CONFIG.json_placeholder.url).await
 }
 
 /// Post a new user.
+/// Not used. JsonPlaceholder does not really support `POST` or `PATCH`.
 ///
 /// ## Arguments.
 /// * `user` - New user info.
 /// * `url` - Url where user should be posted. "/users" will be added to the end of base url.
-async fn post_new_user_with_url(user: User, url: &str) -> Result<User, UserClientError> {
+async fn _post_new_user_with_url(user: User, url: &str) -> Result<User, UserClientError> {
 
     // Parse url and handle possible errors.
     let url_result = Url::parse(url).and_then(
@@ -180,22 +184,25 @@ async fn post_new_user_with_url(user: User, url: &str) -> Result<User, UserClien
 }
 
 /// Update an existing user info.
+/// Not used. JsonPlaceholder does not really support `POST` or `PATCH`.
 ///
 /// ## Arguments.
 /// * `user` - Updated user info.
-pub async fn update_existing_user(user: User) -> Result<User, UserClientError> {
+pub async fn _update_existing_user(user: User) -> Result<User, UserClientError> {
     if let None = &user.id {
-        return Err(UserClientError::NoIdError);
+        return Err(UserClientError::_NoIdError);
     };
-    update_existing_user_with_url(user, &CONFIG.json_placeholder.url).await
+    _update_existing_user_with_url(user, &CONFIG.json_placeholder.url).await
 }
 
 /// Update an existing user info.
+/// Not used. JsonPlaceholder does not really support `POST` or `PATCH`.
+///
 ///
 /// ## Arguments.
 /// * `user` - Updated user info.
 /// * `url` - Url where users should be fetched. "/users" will be added to the end of base url.
-async fn update_existing_user_with_url(user: User, url: &str) -> Result<User, UserClientError> {
+async fn _update_existing_user_with_url(user: User, url: &str) -> Result<User, UserClientError> {
 
     // Parse url and handle possible errors.
     let url_result = Url::parse(url).and_then(
@@ -414,7 +421,7 @@ mod test {
     async fn test_post_new_user_faulty_url() {
         assert_eq!(
             Err(UserClientError::UrlParseError),
-            post_new_user_with_url(User::create_test_user(None), "THIS IS NOT A REAL URL").await
+            _post_new_user_with_url(User::create_test_user(None), "THIS IS NOT A REAL URL").await
         );
     }
 
@@ -432,7 +439,7 @@ mod test {
 
         assert_eq!(
             Err(UserClientError::RestError(StatusCode::BAD_REQUEST)),
-            post_new_user_with_url(User::create_test_user(None), mock_server.url("").as_str()).await
+            _post_new_user_with_url(User::create_test_user(None), mock_server.url("").as_str()).await
         );
 
         post_user_mock.assert();
@@ -453,7 +460,7 @@ mod test {
 
         assert_eq!(
             Err(UserClientError::SerdeError),
-            post_new_user_with_url(User::create_test_user(None), mock_server.url("").as_str()).await
+            _post_new_user_with_url(User::create_test_user(None), mock_server.url("").as_str()).await
         );
 
         post_user_mock.assert();
@@ -475,7 +482,7 @@ mod test {
                 .body_from_file("testdata/get_user_response.json");
         });
 
-        let response_result = post_new_user_with_url(new_user_info.clone(), mock_server.url("").as_str()).await;
+        let response_result = _post_new_user_with_url(new_user_info.clone(), mock_server.url("").as_str()).await;
         dbg!(&response_result);
         assert!(response_result.is_ok());
 
@@ -490,7 +497,7 @@ mod test {
     async fn test_update_existing_user_faulty_url() {
         assert_eq!(
             Err(UserClientError::UrlParseError),
-            update_existing_user_with_url(User::create_test_user(None), "THIS IS NOT A PROPER URL.").await
+            _update_existing_user_with_url(User::create_test_user(None), "THIS IS NOT A PROPER URL.").await
         );
     }
 
@@ -508,7 +515,7 @@ mod test {
 
         assert_eq!(
             Err(UserClientError::RestError(StatusCode::BAD_REQUEST)),
-            update_existing_user_with_url(User::create_test_user(None), mock_server.url("").as_str()).await
+            _update_existing_user_with_url(User::create_test_user(None), mock_server.url("").as_str()).await
         );
 
         update_user_mock.assert();
@@ -528,7 +535,7 @@ mod test {
 
         assert_eq!(
             Err(UserClientError::UserNotFound(0.to_string())),
-            update_existing_user_with_url(User::create_test_user(Some(0.to_string())), mock_server.url("").as_str()).await
+            _update_existing_user_with_url(User::create_test_user(Some(0.to_string())), mock_server.url("").as_str()).await
         );
 
         update_user_mock.assert();
@@ -549,7 +556,7 @@ mod test {
 
         assert_eq!(
             Err(UserClientError::SerdeError),
-            update_existing_user_with_url(User::create_test_user(None), mock_server.url("").as_str()).await
+            _update_existing_user_with_url(User::create_test_user(None), mock_server.url("").as_str()).await
         );
 
         update_user_mock.assert();
@@ -571,7 +578,7 @@ mod test {
                 .body_from_file("testdata/get_user_response.json");
         });
 
-        let response_result = update_existing_user_with_url(user_info_to_be_updated.clone(), mock_server.url("").as_str()).await;
+        let response_result = _update_existing_user_with_url(user_info_to_be_updated.clone(), mock_server.url("").as_str()).await;
         assert!(response_result.is_ok());
 
         let response = response_result.unwrap();
