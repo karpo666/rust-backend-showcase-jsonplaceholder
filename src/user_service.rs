@@ -312,6 +312,7 @@ fn generate_update_document(original_user: User, updated_user: User) -> Document
 }
 
 /// Delete user with given id from database.
+/// Not used for now.
 ///
 /// ## Arguments.
 /// * `id` - Id for the user to be deleted.
@@ -320,7 +321,7 @@ fn generate_update_document(original_user: User, updated_user: User) -> Document
 ///
 /// # Returns.
 /// A result containing possible `DatabaseError` an `Ok(())` if everything goes as it should.
-async fn remove_user_from_db_with_config(id: &str, connection_string: &str, database_name: &str) -> Result<(), DatabaseError> {
+async fn _remove_user_from_db_with_config(id: &str, connection_string: &str, database_name: &str) -> Result<(), DatabaseError> {
     // Get collection.
     let collection = get_user_collection(connection_string, database_name).await?;
 
@@ -495,7 +496,7 @@ mod test {
         assert_eq!(&inserted_id, &user_id);
 
         let delete_result =
-            remove_user_from_db_with_config(
+            _remove_user_from_db_with_config(
                 &user_id,
                 &connection_string,
                 DB_NAME
