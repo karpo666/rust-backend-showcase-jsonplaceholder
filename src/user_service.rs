@@ -425,7 +425,7 @@ mod test {
 
         let insert_result =
             create_user_to_db_with_config(
-                &mut User::create_test_user(None),
+                &mut User::_create_test_user(None),
                 &connection_string,
                 DB_NAME
             ).await
@@ -473,7 +473,7 @@ mod test {
 
         let insert_result =
             create_user_to_db_with_config(
-                &mut User::create_test_user(None),
+                &mut User::_create_test_user(None),
                 &connection_string.clone(),
                 DB_NAME
             ).await
@@ -526,7 +526,7 @@ mod test {
 
         let insert_result =
             create_user_to_db_with_config(
-                &mut User::create_test_user(None),
+                &mut User::_create_test_user(None),
                 &connection_string,
                 DB_NAME
             ).await
@@ -535,7 +535,7 @@ mod test {
         assert!(insert_result.is_ok());
         let inserted_id = insert_result.unwrap();
 
-        let mut user = User::create_test_user(Some(inserted_id.clone()));
+        let mut user = User::_create_test_user(Some(inserted_id.clone()));
         user.name = "NEW NAME".to_string();
 
         let update_result =

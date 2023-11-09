@@ -421,7 +421,7 @@ mod test {
     async fn test_post_new_user_faulty_url() {
         assert_eq!(
             Err(UserClientError::UrlParseError),
-            _post_new_user_with_url(User::create_test_user(None), "THIS IS NOT A REAL URL").await
+            _post_new_user_with_url(User::_create_test_user(None), "THIS IS NOT A REAL URL").await
         );
     }
 
@@ -439,7 +439,7 @@ mod test {
 
         assert_eq!(
             Err(UserClientError::RestError(StatusCode::BAD_REQUEST)),
-            _post_new_user_with_url(User::create_test_user(None), mock_server.url("").as_str()).await
+            _post_new_user_with_url(User::_create_test_user(None), mock_server.url("").as_str()).await
         );
 
         post_user_mock.assert();
@@ -460,7 +460,7 @@ mod test {
 
         assert_eq!(
             Err(UserClientError::SerdeError),
-            _post_new_user_with_url(User::create_test_user(None), mock_server.url("").as_str()).await
+            _post_new_user_with_url(User::_create_test_user(None), mock_server.url("").as_str()).await
         );
 
         post_user_mock.assert();
@@ -470,13 +470,13 @@ mod test {
     async fn test_post_new_user() {
         let mock_server = httpmock::MockServer::start();
 
-        let new_user_info = User::create_test_user(Some(0.to_string()));
+        let new_user_info = User::_create_test_user(Some(0.to_string()));
 
         let post_user_mock = mock_server.mock(|when, then| {
             when.method(POST)
                 .header(CONTENT_TYPE.as_str(), "application/json")
                 .header(ACCEPT.as_str(), "application/json")
-                .json_body(json!(User::create_test_user(Some(0.to_string()))));
+                .json_body(json!(User::_create_test_user(Some(0.to_string()))));
             then.status(StatusCode::OK.into())
                 .header(CONTENT_TYPE.as_str(), "application/json")
                 .body_from_file("testdata/get_user_response.json");
@@ -497,7 +497,7 @@ mod test {
     async fn test_update_existing_user_faulty_url() {
         assert_eq!(
             Err(UserClientError::UrlParseError),
-            _update_existing_user_with_url(User::create_test_user(None), "THIS IS NOT A PROPER URL.").await
+            _update_existing_user_with_url(User::_create_test_user(None), "THIS IS NOT A PROPER URL.").await
         );
     }
 
@@ -515,7 +515,7 @@ mod test {
 
         assert_eq!(
             Err(UserClientError::RestError(StatusCode::BAD_REQUEST)),
-            _update_existing_user_with_url(User::create_test_user(None), mock_server.url("").as_str()).await
+            _update_existing_user_with_url(User::_create_test_user(None), mock_server.url("").as_str()).await
         );
 
         update_user_mock.assert();
@@ -535,7 +535,7 @@ mod test {
 
         assert_eq!(
             Err(UserClientError::UserNotFound(0.to_string())),
-            _update_existing_user_with_url(User::create_test_user(Some(0.to_string())), mock_server.url("").as_str()).await
+            _update_existing_user_with_url(User::_create_test_user(Some(0.to_string())), mock_server.url("").as_str()).await
         );
 
         update_user_mock.assert();
@@ -556,7 +556,7 @@ mod test {
 
         assert_eq!(
             Err(UserClientError::SerdeError),
-            _update_existing_user_with_url(User::create_test_user(None), mock_server.url("").as_str()).await
+            _update_existing_user_with_url(User::_create_test_user(None), mock_server.url("").as_str()).await
         );
 
         update_user_mock.assert();
@@ -566,7 +566,7 @@ mod test {
     async fn test_update_existing_user() {
         let mock_server = httpmock::MockServer::start();
 
-        let user_info_to_be_updated = User::create_test_user(Some(10.to_string()));
+        let user_info_to_be_updated = User::_create_test_user(Some(10.to_string()));
 
         let update_user_mock = mock_server.mock(|when, then| {
             when.method(PATCH)

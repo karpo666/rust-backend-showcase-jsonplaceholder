@@ -35,7 +35,7 @@ pub struct Company {
 impl User {
 
     /// Create a new user. Meant for testing.
-    pub fn create_test_user(id: Option<String>) -> User {
+    pub fn _create_test_user(id: Option<String>) -> User {
         User {
             id: id,
             name: "TESTER".to_string(),
