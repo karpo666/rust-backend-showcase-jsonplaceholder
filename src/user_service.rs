@@ -66,7 +66,7 @@ pub async fn create_new_user(mut user: User) -> Result<User, DatabaseError> {
         return Err(DatabaseError::OperationFailed)
     };
 
-    user.id = Some(creation_result.unwrap());
+    user.id = Some(creation_result?);
 
     Ok(user)
 }
@@ -97,7 +97,7 @@ pub async fn get_user(id: &str) -> Result<User, DatabaseError> {
     info!("Checking JsonPlaceholder for user with id: {id}");
     let jph_result = user_client::get_user(id.to_string()).await;
 
-    return match jph_result {
+    match jph_result {
         Ok(user) => Ok(user),
         Err(UserClientError::UserNotFound(_)) => Err(DatabaseError::UserNotFound(id.to_string())),
         _ => Err(DatabaseError::OperationFailed)
@@ -174,7 +174,7 @@ async fn get_all_users_from_db_with_config(connection_string: &str, database_nam
         result.push(current);
     }
 
-    return Ok(result)
+    Ok(result)
 }
 
 /// Get user info from database with id.

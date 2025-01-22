@@ -48,10 +48,7 @@ pub async fn get_user_with_id(req: HttpRequest, id: web::Path<String>) -> impl R
 #[post("/users")]
 async fn create_new_user(req: HttpRequest, user: web::Data<User>) -> impl Responder {
     info!("Incoming request to create a new user.");
-    if check_accept_header_json(&req).is_err() {
-        warn!("Request missing required headers. Responding with 400.");
-        return HttpResponse::BadRequest().body("Missing or incorrect headers")
-    } else if check_content_type_header_json(&req).is_err() {
+    if let Err(()) = check_headers(&req) {
         warn!("Request missing required headers. Responding with 400.");
         return HttpResponse::BadRequest().body("Missing or incorrect headers")
     }
@@ -76,10 +73,7 @@ async fn create_new_user(req: HttpRequest, user: web::Data<User>) -> impl Respon
 #[patch("/users/{id}")]
 async fn update_user(req: HttpRequest, user: web::Data<User>, id: web::Path<String>) -> impl Responder {
     info!("Incoming request to update user info with id: {id}.");
-    if check_accept_header_json(&req).is_err() {
-        warn!("Request missing required headers. Responding with 400.");
-        return HttpResponse::BadRequest().body("Missing or incorrect headers")
-    } else if check_content_type_header_json(&req).is_err() {
+    if let Err(()) = check_headers(&req) {
         warn!("Request missing required headers. Responding with 400.");
         return HttpResponse::BadRequest().body("Missing or incorrect headers")
     }
@@ -89,7 +83,7 @@ async fn update_user(req: HttpRequest, user: web::Data<User>, id: web::Path<Stri
     match user_service::update_user(user).await {
         Ok(()) => {
             info!("User with id: {id} updated successfully. Responding with 200.");
-            return HttpResponse::Ok().body("");
+            HttpResponse::Ok().body("")
         },
         Err(user_service::DatabaseError::UserNotFound(_)) => {
             warn!("User with id: {id} not found. Responding with 404.");
@@ -99,6 +93,18 @@ async fn update_user(req: HttpRequest, user: web::Data<User>, id: web::Path<Stri
             warn!("Error occurred when updating user. Responding with 500");
             HttpResponse::InternalServerError().body("")
         }
+    }
+}
+
+fn check_headers(req: &HttpRequest) -> Result<(), ()> {
+    if check_accept_header_json(req).is_err() {
+        warn!("Request missing required headers. Responding with 400.");
+        Err(())
+    } else if check_content_type_header_json(req).is_err() {
+        warn!("Request missing required headers. Responding with 400.");
+        Err(())
+    } else {
+        Ok(())
     }
 }
 

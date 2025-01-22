@@ -37,7 +37,7 @@ impl User {
     /// Create a new user. Meant for testing.
     pub fn _create_test_user(id: Option<String>) -> User {
         User {
-            id: id,
+            id,
             name: "TESTER".to_string(),
             username: "TESTER_69".to_string(),
             email: "testlover@testing.gov".to_string(),
